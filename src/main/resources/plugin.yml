@@ -1,0 +1,6 @@
+name: generatePlarform
+version: '${version}'
+main: ru.levandr.generateplarform.GeneratePlatform
+commands:
+  factory:
+    description: Creates a new factory and adds recipes to it

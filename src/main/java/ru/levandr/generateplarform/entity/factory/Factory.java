@@ -2,12 +2,15 @@ package ru.levandr.generateplarform.entity.factory;
 
 
 import org.bukkit.inventory.ItemStack;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Factory {
 
+    private static final Logger logger = LoggerFactory.getLogger(Factory.class);
 
     private ItemStack inputSlot;
     private ItemStack outputSlot;
@@ -27,14 +30,17 @@ public class Factory {
         return inputSlot;
     }
 
+
     public void setInputSlot(ItemStack inputSlot) {
         // Проверяем, является ли предмет в слоте ввода допустимым входным предметом
         if (getRecipeForInput(inputSlot) != null) {
             System.out.println("Valid input item: " + inputSlot.getType());
-            this.inputSlot = inputSlot;
-            this.inventory.getInventory().setItem(0, inputSlot);
+            // Создаем новый экземпляр ItemStack с теми же свойствами, что и inputSlot
+            ItemStack clonedInputSlot = new ItemStack(inputSlot.getType(), inputSlot.getAmount());
+            this.inputSlot = clonedInputSlot;
+            this.inventory.getInventory().setItem(0, clonedInputSlot);
             for (FactoryRecipe recipe : recipes) {
-                if (inputSlot.isSimilar(recipe.getInput())) {
+                if (clonedInputSlot.isSimilar(recipe.getInput())) {
                     setOutputSlot(recipe.getOutput().clone());
                     return;
                 }
@@ -68,23 +74,25 @@ public class Factory {
     public FactoryRecipe getRecipeForInput(ItemStack input) {
         for (FactoryRecipe recipe : recipes) {
             if (input.isSimilar(recipe.getInput())) {
+                System.out.println("getRecipeForInput");
                 return recipe;
             }
         }
+        System.out.println("getRecipeForInput = null");
         return null;
     }
 
 
     public void process() {
-        System.out.println("Processing factory...");
+        logger.info("Processing factory...");
 
         ItemStack inputItem = getInputSlot();
         if (inputItem != null && inputItem.getAmount() > 0) {
-            System.out.println("Input item: " + inputItem.getType());
+            logger.info("Input item: {}", inputItem.getType());
 
             FactoryRecipe recipe = getRecipeForInput(inputItem);
             if (recipe != null) {
-                System.out.println("Found recipe for input item");
+                logger.info("Found recipe for input item");
 
                 inputItem.setAmount(inputItem.getAmount() - 1);
                 if (inputItem.getAmount() <= 0) {
@@ -104,11 +112,12 @@ public class Factory {
                     setOutputSlot(recipe.getOutput().clone());
                 }
             } else {
-                System.out.println("No recipe found for input item");
+                logger.info("No recipe found for input item");
             }
         } else {
-            System.out.println("No input item or input item amount is 0");
+            logger.info("No input item or input item amount is 0");
         }
     }
-
 }
+
+
